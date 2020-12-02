@@ -1,7 +1,36 @@
-##简单使用
-以springboot项目为例通过demo简单介绍一下junit测试
-#### web
-```
+import cn.soft1010.java.junit.JunitSpringRunner;
+import cn.soft1010.java.junit.vo.Result;
+import cn.soft1010.java.junit.vo.UserPo;
+import com.alibaba.fastjson.JSONObject;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+/**
+ * Created by zhangjifu on 2020/12/2.
+ */
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringBootTest(classes = JunitSpringRunner.class)
+@AutoConfigureMockMvc
+public class UserControllerTest {
+
+    Logger logger = LoggerFactory.getLogger(UserControllerTest.class);
+
+    @Autowired
+    private MockMvc mockMvc;
+
     @Test
     public void testDetail() throws Exception {
         Integer id = 11;
@@ -12,7 +41,7 @@
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code", Matchers.is(0)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data.id", Matchers.is(id)));
     }
-    
+
     @Test
     public void testDetail2() throws Exception {
         Integer id = 11;
@@ -22,7 +51,8 @@
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code", Matchers.is(0)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data.id", Matchers.is(id)));
-    }   
+    }
+
     @Test
     public void testSave() throws Exception {
         UserPo userPo = new UserPo();
@@ -33,40 +63,18 @@
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code", Matchers.is(0)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data.id", Matchers.is(userPo.getId())));
-    }    
-```
-
-
-#### 非web
-直接使用org.junit.Assert
-```
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @SpringBootTest(classes = JunitSpringRunner.class)
-    public class UserServiceTest {
-        @Resource
-        UserService userService;
-        @Test
-        public void test() {
-            Assert.assertEquals(new Integer(10), userService.queryById(10).getId());
-        }
     }
-```
 
-#### web也可以使用assert
-```
-  @Test
+    @Test
     public void testSave2() throws Exception {
         UserPo userPo = new UserPo();
         userPo.setId(100);
         userPo.setName("zhangjf");
         String result = mockMvc.perform(MockMvcRequestBuilders.post("/user/save")
                 .content(JSONObject.toJSONString(userPo)).contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                //拿到请求返回值
                 .andReturn().getResponse().getContentAsString();
         Assert.assertEquals(new Integer(0), JSONObject.parseObject(result).getInteger("code"));
         Assert.assertEquals(userPo.getId(), ((JSONObject) JSONObject.parseObject(result).get("data")).getInteger("id"));
     }
-```
 
-**参考**
-源码:
+}
